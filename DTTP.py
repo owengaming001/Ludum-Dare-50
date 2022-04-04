@@ -6,6 +6,9 @@ Make more levels (easier ones)
 
 
 #SECTION 1: Defining variables
+import numpy.random.common
+import numpy.random.bounded_integers
+import numpy.random.entropy
 import numpy,json,os,sys,time,threading,copy,random,urllib.request
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT']="hide"
 import pygame
