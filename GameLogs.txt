@@ -1,18 +1,70 @@
-Levels\A.png
-Levels\B.png
-Levels\C.png
-Levels\D.png
-Levels\E.png
-Levels\F.png
-Levels\G.png
-Levels\H.png
-Levels\I.png
-Levels\J.png
-Levels\K.png
-Levels\L.png
-Levels\M.png
-Levels\N.png
-Levels\O.png
-Levels\P.png
-Levels\Q.png
-Levels\R.png
+Levels/Classic\A.png
+Levels/Classic\B.png
+Levels/Classic\D.png
+Levels/Classic\E.png
+Levels/Classic\G.png
+Levels/Classic\I.png
+Levels/Classic\J.png
+Levels/Classic\K.png
+Levels/Classic\L.png
+Levels/Classic\M.png
+Levels/Classic\N.png
+Levels/Classic\O.png
+Levels/Classic\P.png
+Levels/Classic\Q.png
+Levels/Classic\R.png
+Levels/Classic\A.png
+Levels/Classic\B.png
+Levels/Classic\D.png
+Levels/Classic\E.png
+Levels/Classic\G.png
+Levels/Classic\I.png
+Levels/Classic\J.png
+Levels/Classic\K.png
+Levels/Classic\L.png
+Levels/Classic\M.png
+Levels/Classic\N.png
+Levels/Classic\O.png
+Levels/Classic\P.png
+Levels/Classic\Q.png
+Levels/Classic\R.png
+Level 1: 2.303860664367676
+Level 2: 5.653648376464844
+Level 3: 7.821514368057251
+Level 4: 10.454351902008057
+Level 5: 14.952072143554688
+Level 6: 18.27386713027954
+Level 7: 21.08872699737549
+Levels/Classic\A.png
+Levels/Classic\B.png
+Levels/Classic\D.png
+Levels/Classic\E.png
+Levels/Classic\G.png
+Levels/Classic\I.png
+Levels/Classic\J.png
+Levels/Classic\K.png
+Levels/Classic\L.png
+Levels/Classic\M.png
+Levels/Classic\N.png
+Levels/Classic\O.png
+Levels/Classic\P.png
+Levels/Classic\Q.png
+Levels/Classic\R.png
+Level 1: 2.1208362579345703
+Level 2: 4.273703575134277
+Level 3: 8.620433568954468
+Levels/Classic\A.png
+Levels/Classic\B.png
+Levels/Classic\D.png
+Levels/Classic\E.png
+Levels/Classic\G.png
+Levels/Classic\I.png
+Levels/Classic\J.png
+Levels/Classic\K.png
+Levels/Classic\L.png
+Levels/Classic\M.png
+Levels/Classic\N.png
+Levels/Classic\O.png
+Levels/Classic\P.png
+Levels/Classic\Q.png
+Levels/Classic\R.png

@@ -6,21 +6,25 @@ Make more levels (easier ones)
 
 
 #SECTION 1: Defining variables
-import numpy.random.common
-import numpy.random.bounded_integers
-import numpy.random.entropy
-import numpy,json,os,sys,time,threading,copy,random,urllib.request
+import numpy,json,os,sys,time,threading,copy,random
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT']="hide"
 import pygame
 
+
 sys.stdout=open("GameLogs.txt","w")
 pygame.init()
+Icon=pygame.image.load("Icon.png")
+pygame.display.set_caption("Don't Touch the Purple")
+pygame.display.set_icon(Icon)
 Font=pygame.font.Font("Fonts/rainyhearts.ttf",16)
 win=pygame.Surface((256,144))
 RenderType="Level"
 RenderText="Press V to jump and X to dash."
 RenderTextList=open("RenderTextList.txt").read().splitlines()
 RenderTextListIndexes=list(range(len(RenderTextList)))
+
+
+
 WallLocation=0
 HighScore=int(open("High Score.txt").read())
 TrueWin=pygame.display.set_mode((0,0),pygame.FULLSCREEN)
@@ -53,10 +57,10 @@ TileProperties={
 		},
 }
 
-def GetColors(Color=None,Mode=None,UseOnlyGoodColors=False,Image=None):
+def GetColors(Color=None,Mode=None,UseOnlyGoodColors=False,Image=None,Index=0):
 	global GameColors#
 	if Image!=None:
-		GameColors=[Image.get_at((i,0)) for i in range(4)]
+		GameColors=[Image.get_at((i,Index)) for i in range(4)]
 		return GameColors
 	if UseOnlyGoodColors:
 		ColorList=pygame.image.load("Colors.png")
@@ -89,46 +93,6 @@ def GetDeathText():
 #GenerateColorImage()
 
 #Section 2: Defining Classes
-
-class MenuClass:
-	def __init__(self,Choices=["Default Menu","Test"],SelectedItem=0):
-		self.Choices=Choices
-		self.SelectedItem=SelectedItem
-		self.SelectedItemTransition=SelectedItem
-	def __call__(self):
-		global RenderType,RenderMenu
-		RenderType="Menu"
-		RenderMenu=self
-		print("A")
-		while 1:
-			X=self.Loop(*InputHandler())
-			if X!="_CONTINUE":
-				return X
-	def Loop(self,Events,Keys):
-		for Event in Events:
-			if Event.type==pygame.QUIT:
-				return "Exit"
-			if Event.type==pygame.KEYDOWN:
-				if Event.key==pygame.K_ESCAPE:
-					return "Exit"
-				if Event.key==pygame.K_DOWN:
-					if self.SelectedItem!=len(self.Choices)-1:
-						self.SelectedItem+=1
-				if Event.key==pygame.K_UP:
-					if self.SelectedItem!=0:
-						self.SelectedItem-=1
-				if Event.key==pygame.K_v:
-					return self.Choices[SelectedItem]
-		return "_CONTINUE"
-	def Render(self):
-		self.SelectedItemTransition-=self.SelectedItem%len(self.Choices)
-		self.SelectedItemTransition/=1.1
-		self.SelectedItemTransition+=self.SelectedItem%len(self.Choices)
-		win.fill(0)
-		for i,j in enumerate(self.Choices):
-			T=Font.render(j,0,(255,255,255))
-			win.blit(T,(win.get_width()/2-T.get_width()/2,win.get_height()/2-T.get_height()/2+100*(i-self.SelectedItemTransition)**3))
-		ScaleWindow()
 class CameraClass:
 	def __init__(self):
 		self.Pos=[0,0]
@@ -214,7 +178,7 @@ class PlayerClass:
 			self.XV+=(Keys[pygame.K_RIGHT]-Keys[pygame.K_LEFT])*1.5
 			self.XV/=2
 			self.YV+=0.05
-		elif self.WallBound==self.CoyoteTime: #Wall Slide Physics
+		elif self.WallBound==self.CoyoteTime and self.YV>0: #Wall Slide Physics
 			self.XV+=(Keys[pygame.K_RIGHT]-Keys[pygame.K_LEFT])*1.5
 			self.XV/=2
 			self.YV/=1.2
@@ -307,13 +271,13 @@ class PlayerClass:
 		Level=World.Levels[CurrentLevel]
 
 class WorldClass:
-	def __init__(self):
+	def __init__(self,Gamemode="Classic"):
 		global LightColors,DarkColors
-		GetColors(Image=pygame.image.load("Game Colors.png"))
+		GetColors(Image=pygame.image.load("Game Colors.png"),Index=random.randint(0,7))
 		self.Levels=[]
 		L=[]
 		Files=[]
-		for (dirpath, dirnames, filenames) in os.walk("Levels"):
+		for (dirpath, dirnames, filenames) in os.walk(f"Levels/{Gamemode}"):
 			Files.extend(dirpath+"\\"+i for i in filenames)
 			break
 		for i in Files:
@@ -392,7 +356,7 @@ def MainThread():
 		Frames+=1
 		X=StartTime+Frames/60-time.time()
 		if X>0:
-			time.sleep(X)
+			RenderDelay(X)
 def Loop(Events,Keys):
 	global Level,CurrentLevel,OldLevelPos,LevelChange,Frames,WallLocation,StartTime
 	for Event in Events:
@@ -450,7 +414,7 @@ def Loop(Events,Keys):
 			Frames+=1
 			X=StartTime+Frames/60-time.time()
 			if X>0:
-				time.sleep(X)
+				RenderDelay(X)
 			Camera.UpdatePosition(1.3)
 	Level()
 	WallLocation+=(CurrentLevel+1)/30
@@ -475,15 +439,17 @@ def ChromaticAberration(Pos):
 		win.blit(ColorScreens[i],(0,0),special_flags=pygame.BLEND_ADD)
 def RenderThread():
 	while 1:
-		try:
-			if RenderType=="Level":
-				RenderLevel()
-			elif RenderType=="Menu":
-				RenderMenu.Render()
-			else:
-				RenderWorldIntro()
-		except:
-			pass
+		DoRender()
+def DoRender():
+	try:
+		if RenderType=="Level":
+			RenderLevel()
+		elif RenderType=="Menu":
+			RenderMenu.Render()
+		else:
+			RenderWorldIntro()
+	except:
+		pass
 def RenderLevel():
 	global Frames
 	win.fill(GameColors[3])
@@ -495,7 +461,20 @@ def RenderLevel():
 	G=abs(Player.XV)-abs(Player.YV)
 	G/=5
 	G=2**G
-	pygame.draw.rect(win,GameColors[2],[Camera(numpy.subtract(Player.RenderPos,numpy.multiply(Player.HitBoxSize,[int(4*G),int(4/G)]))),numpy.add(numpy.multiply(Player.HitBoxSize,[int(8*G),int(8/G)]),1)])
+	pygame.draw.rect(win,GameColors[2],[Camera(
+		numpy.subtract(
+			Player.RenderPos,numpy.multiply(
+				Player.HitBoxSize,
+				[int(4*G+0.5),int(4/G+0.5)]
+				)
+			)
+		),
+	numpy.add(
+		numpy.multiply(
+			Player.HitBoxSize,
+			[int(8*G+0.5),int(4/G+4+0.5)]
+			)
+		,1)])
 	pygame.draw.rect(win,GameColors[3],[(Camera((0,0))[0],0),(WallLocation,win.get_height())])
 	ChromaticAberration(numpy.subtract(Camera.Pos,Camera.RenderPos))
 	try:
@@ -509,24 +488,112 @@ def RenderWorldIntro():
 	win.fill(0)
 	#TODO: Fix Color
 	T=Font.render(RenderText,0,(255,255,255))
-	T2=Font.render(f"High Score: Level {HighScore}",0,(127,0,255))
+	try:
+		T2=Font.render(f"High Score: Level {HighScore}",0,GameColors[3])
+	except:
+		T2=Font.render(f"High Score: Level {HighScore}",0,(255,255,255))
 	win.blit(T,(win.get_width()/2-T.get_width()/2,win.get_height()/2-T.get_height()/2))
 	win.blit(T2,(win.get_width()/2-T2.get_width()/2,0))
 	ScaleWindow()
 	pass
 
+
+def RenderDelay(T):
+	S=time.time()
+	while time.time()-S<T:
+		DoRender()
+
+def BlitSprite(Image,Position):
+	win.blit(Image,[int(Position[0]+win.get_width()/2-Image.get_width()/2+0.5),int(-Position[1]+win.get_height()/2-Image.get_height()/2+0.5)])
+
+
+def Blink(Color=(255,255,255)):
+	win.fill(Color)
+	BlitSprite(Font.render(f"DTTP",0,[(255,255,255),(0,0,0)][Color==(255,255,255)]),(0,0))
+	ScaleWindow()
+	pygame.time.delay(30)
+	#WinScale()
+	#ClockDelay(30)
+
 #SECTION 5: Starting the game
+def QuitGame():
+	sys.exit()
+	pygame.quit()
+def BlankFunction():
+	pass
+def TitleScreen():
+	StartHeight=0
+	TitleHeight=-128
+	#pygame.mixer.music.load("Music/Title.mp3")
+	#pygame.mixer.music.play(-1)
+	while 1:
+		win.fill((0,0,0))
+		BlitSprite(Logo,(0,TitleHeight))
+		BlitSprite(Font.render(f"Press Space",0,(255,0,0)),(0,StartHeight))
+		StartHeight*=0.95
+		StartHeight-=120*0.05
+		TitleHeight*=0.95
+		WinScale()
+		ClockDelay(10)
+		HandleInputs()
+		if Button:
+			#Sounds["Confirm"].play()
+			MenuScreen()
+			StartHeight=0
+			TitleHeight=-128
+			Blink()
+			pygame.mixer.music.load("Music/Title.mp3")
+			pygame.mixer.music.play(-1)
+
+def MenuScreen():
+	#Blink()
+	Selected=0
+	TextList=["Start","Endless","Quit to Title","Close Game"]
+	PosList=[
+	[i*1000,0] for i in range(len(TextList))]
+	TitleHeight=0
+	ControlY=0
+	while 1:
+		S=0.1
+		TitleHeight*=(1-S)
+		TitleHeight+=(PosList[0][1]+32)*S
+		LastCX=ControlY
+		#HandleInputs()
+		Events=pygame.event.get()
+		keys=pygame.key.get_pressed()
+		ControlY=keys[pygame.K_UP]-keys[pygame.K_DOWN]
+		DeltaCX=max(abs(ControlY)-abs(LastCX),0)*ControlY
+		Selected-=DeltaCX
+		#if DeltaCX:
+		#	Sounds["Select"].play()
+		for i,j in enumerate(PosList):
+			S=0.1#+i*0.03
+			PosList[i][0]=j[0]*(1-S)+((i==Selected)*64-32)*S
+			PosList[i][1]=j[1]*(1-S)-(i-Selected)*16*S
+		win.fill((0,0,0))
+		#BlitSprite(Logo,(0,TitleHeight))
+		for i,j in enumerate(TextList):
+			BlitSprite(Font.render(j,0,[(255,0,0),(255,255,255)][i==Selected]),PosList[i])
+		Selected%=len(TextList)
+		ScaleWindow()
+		#ClockDelay(10)
+		if keys[pygame.K_ESCAPE]:
+			return
+		if keys[pygame.K_v]:
+			#Sounds["Confirm"].play()
+			pygame.mixer.music.stop()
+			Blink()
+			[Main,BlankFunction,BlankFunction,QuitGame][Selected]()
+			return
+
 def Main():
 	global World,CurrentLevel,Level,Camera,Player,RT,OldLevelPos,RenderType,WallLocation,RenderText,HighScore
 	pygame.mixer.music.load(f"Music/OST.mp3")
-	pygame.mixer.music.play(-1)
+	#pygame.mixer.music.play(-1)
 	pygame.mixer.music.set_volume(1)
-	RT=threading.Thread(target=RenderThread)
-	RT.daemon=1
-	RT.start()
 	pygame.mixer.Sound("Death Voice Lines/Don't Touch the Purple (TTS) Export 1 Track 1 Render 1.wav").play()
 	RenderType="World Intro"
-	pygame.time.delay(2300)
+	RenderDelay(2)
 	RenderText="Don't Touch the Purple"
 	X="Restart"
 	while X=="Restart":
@@ -536,9 +603,9 @@ def Main():
 		World=WorldClass()
 		CurrentLevel=0
 		Level=World.Levels[CurrentLevel]
+		RenderDelay(1)
 		Camera=CameraClass()
 		Player=PlayerClass()
-		pygame.time.delay(300)
 		RenderType="Level"
 		X=MainThread()
 		if X=="Complete":
@@ -549,5 +616,6 @@ def Main():
 		RenderText=GetDeathText()
 if __name__=="__main__":
 	#print(MenuClass(["One","Two","Three","Four","Five"])())
-	Main()
+	#Main()
+	MenuScreen()
 #v
