@@ -135,35 +135,34 @@ class PlayerClass:
 		self.Pos[1]-=8
 		self.RespawnPoint=copy.deepcopy(self.Pos)
 		self.RenderPos=copy.deepcopy(self.Pos)
-	def __call__(self,Events,Keys):
+	def __call__(self):
 		#Jumping
-		for Event in Events:
-			if Event.type==pygame.KEYDOWN:
-				if Event.key==pygame.K_v and self.Grounded:
-					self.YV=-4
-					self.Grounded=0
-					Sounds["Jump"].play()
-				elif Event.key==pygame.K_v and self.WallBound:
-					self.YV=-7
-					self.WallBound=0
-					self.WallJumpTimer=20
-					self.XV=-self.WallSide*5
-					Sounds["Jump"].play()
-				elif Event.key==pygame.K_x and self.DoubleJump:
-					self.XV=self.Direction*13
-					self.YV=0
-					self.WallJumpTimer=7
-					self.DoubleJump-=1
-					Camera.Shake(10)
-					Sounds["Dash"].play()
-				elif Event.key==pygame.K_v and self.DoubleJump:
-					self.YV=-5
-					self.DoubleJump-=1
-					Camera.Shake(10)
-					Sounds["Dash"].play()
+		print("A")
+		if JumpPress and self.Grounded:
+			self.YV=-4
+			self.Grounded=0
+			Sounds["Jump"].play()
+		elif JumpPress and self.WallBound:
+			self.YV=-7
+			self.WallBound=0
+			self.WallJumpTimer=20
+			self.XV=-self.WallSide*5
+			Sounds["Jump"].play()
+		elif DashPress and self.DoubleJump:
+			self.XV=self.Direction*13
+			self.YV=0
+			self.WallJumpTimer=7
+			self.DoubleJump-=1
+			Camera.Shake(10)
+			Sounds["Dash"].play()
+		elif JumpPress and self.DoubleJump:
+			self.YV=-5
+			self.DoubleJump-=1
+			Camera.Shake(10)
+			Sounds["Dash"].play()
 
 		#Calculate Direction
-		X=numpy.sign(Keys[pygame.K_RIGHT]-Keys[pygame.K_LEFT])
+		X=ControlX
 		if X!=0:
 			self.Direction=X
 
@@ -175,31 +174,31 @@ class PlayerClass:
 			self.XV/=1.1
 			self.YV/=1.1
 		elif self.Grounded==self.CoyoteTime: #Grounded Physics
-			self.XV+=(Keys[pygame.K_RIGHT]-Keys[pygame.K_LEFT])*1.5
+			self.XV+=ControlX*1.5
 			self.XV/=2
 			self.YV+=0.05
 		elif self.WallBound==self.CoyoteTime and self.YV>0: #Wall Slide Physics
-			self.XV+=(Keys[pygame.K_RIGHT]-Keys[pygame.K_LEFT])*1.5
+			self.XV+=ControlX*1.5
 			self.XV/=2
 			self.YV/=1.2
 			self.YV+=0.4
 		else:
 			if abs(self.YV)<0.5: #Apex Physics
-				if Keys[pygame.K_v]:
-					self.XV+=(Keys[pygame.K_RIGHT]-Keys[pygame.K_LEFT])
+				if JumpHeld:
+					self.XV+=ControlX
 					self.XV/=1.5
 					self.YV+=0.05
 				else:
-					self.XV+=(Keys[pygame.K_RIGHT]-Keys[pygame.K_LEFT])
+					self.XV+=ControlX
 					self.XV/=1.5
 					self.YV+=0.1
 			else: #Air Physics
-				if Keys[pygame.K_v]:
-					self.XV+=(Keys[pygame.K_RIGHT]-Keys[pygame.K_LEFT])
+				if JumpHeld:
+					self.XV+=ControlX
 					self.XV/=1.5
 					self.YV+=0.2
 				else:
-					self.XV+=(Keys[pygame.K_RIGHT]-Keys[pygame.K_LEFT])
+					self.XV+=ControlX
 					self.XV/=1.5
 					self.YV+=0.4
 
@@ -273,7 +272,6 @@ class PlayerClass:
 class WorldClass:
 	def __init__(self,Gamemode="Classic"):
 		global LightColors,DarkColors
-		GetColors(Image=pygame.image.load("Game Colors.png"),Index=random.randint(0,7))
 		self.Levels=[]
 		L=[]
 		Files=[]
@@ -338,45 +336,25 @@ class LevelClass:
 
 #SECTION 3: Defining gameplay functions
 
-def InputHandler():
-	return pygame.event.get(),pygame.key.get_pressed()
 def MainThread():
 	global Frames,StartTime
 	StartTime=time.time()
 	Frames=0
 	while 1:
-		try:
-			G=Loop(*InputHandler())
-		except IndexError:
-			return "Complete"
-		if G=="Restart":
+		G=Loop()
+		if G!=None:
 			return "Restart"
-		if G=="Exit":
-			sys.exit()
+		if QuitToTitleTrigger:
+			return
 		Frames+=1
 		X=StartTime+Frames/60-time.time()
 		if X>0:
 			RenderDelay(X)
-def Loop(Events,Keys):
+def Loop():
 	global Level,CurrentLevel,OldLevelPos,LevelChange,Frames,WallLocation,StartTime
-	for Event in Events:
-		if Event.type==pygame.QUIT:
-			return "Exit"
-		if Event.type==pygame.KEYDOWN:
-			if Event.key==pygame.K_ESCAPE:
-				return "Exit"
-			if Event.key==pygame.K_r:
-				return "Restart"
-	if Keys[pygame.K_g]:
-		Player.XV=0
-		Player.YV=0
-		Player.Pos[0]+=Keys[pygame.K_RIGHT]-Keys[pygame.K_LEFT]
-		Player.Pos[1]+=Keys[pygame.K_DOWN]-Keys[pygame.K_UP]
-		Player.RenderPos=copy.deepcopy(Player.Pos)
-	else:
-		X=Player(Events,Keys)
-		if X=="Restart":
-			return "Restart"
+	X=Player()
+	if X=="Restart":
+		return "Restart"
 	CPos=numpy.subtract(Camera.Pos,Player.Pos)
 	PosChange=[0,0]
 	if Player.Pos[0]>Level.Image.get_width():
@@ -422,8 +400,33 @@ def Loop(Events,Keys):
 	Camera.UpdatePosition()
 
 #SECTION 4: Defining render functions
-
-def ScaleWindow():
+JumpPress,JumpHeld,DashPress,DashHeld,EscapePress=0,0,0,0,0
+JumpButton=pygame.K_v
+DashButton=pygame.K_x
+def ScaleWindow(Paused=0):
+	global JumpPress,JumpHeld,DashPress,DashHeld,EscapePress,ControlX,ControlY
+	JumpPress=0
+	JumpHeld=0
+	DashPress=0
+	DashHeld=0
+	EscapePress=0
+	for Event in pygame.event.get():
+		if Event.type==pygame.KEYDOWN:
+			if Event.key==JumpButton:
+				JumpPress=1
+			if Event.key==DashButton:
+				DashPress=1
+			if Event.key==pygame.K_ESCAPE:
+				EscapePress=1
+				if not Paused:
+					PauseScreen()
+		if Event.type==pygame.QUIT:
+			sys.exit()
+	keys=pygame.key.get_pressed()
+	ControlX=keys[pygame.K_RIGHT]-keys[pygame.K_LEFT]
+	ControlY=keys[pygame.K_UP]-keys[pygame.K_DOWN]
+	JumpHeld=keys[JumpButton]
+	DashHeld=keys[DashPress]
 	pygame.transform.scale(win,(TrueWin.get_width(),TrueWin.get_height()),TrueWin)
 	pygame.display.update()
 def ChromaticAberration(Pos):
@@ -441,15 +444,12 @@ def RenderThread():
 	while 1:
 		DoRender()
 def DoRender():
-	try:
-		if RenderType=="Level":
-			RenderLevel()
-		elif RenderType=="Menu":
-			RenderMenu.Render()
-		else:
-			RenderWorldIntro()
-	except:
-		pass
+	if RenderType=="Level":
+		RenderLevel()
+	elif RenderType=="Menu":
+		RenderMenu.Render()
+	else:
+		RenderWorldIntro()
 def RenderLevel():
 	global Frames
 	win.fill(GameColors[3])
@@ -500,8 +500,8 @@ def RenderWorldIntro():
 
 def RenderDelay(T):
 	S=time.time()
-	while time.time()-S<T:
-		DoRender()
+	DoRender()
+	time.sleep(max(T-time.time()+S,0))
 
 def BlitSprite(Image,Position):
 	win.blit(Image,[int(Position[0]+win.get_width()/2-Image.get_width()/2+0.5),int(-Position[1]+win.get_height()/2-Image.get_height()/2+0.5)])
@@ -509,7 +509,7 @@ def BlitSprite(Image,Position):
 
 def Blink(Color=(255,255,255)):
 	win.fill(Color)
-	BlitSprite(Font.render(f"DTTP",0,[(255,255,255),(0,0,0)][Color==(255,255,255)]),(0,0))
+	#BlitSprite(Font.render(f"DTTP",0,[(255,255,255),(0,0,0)][Color==(255,255,255)]),(0,0))
 	ScaleWindow()
 	pygame.time.delay(30)
 	#WinScale()
@@ -522,29 +522,35 @@ def QuitGame():
 def BlankFunction():
 	pass
 def TitleScreen():
+	global Logo,QuitToTitleTrigger
 	StartHeight=0
-	TitleHeight=-128
+	TitleHeight=-64
 	#pygame.mixer.music.load("Music/Title.mp3")
 	#pygame.mixer.music.play(-1)
+	Logo=pygame.image.load("Logo.png")
 	while 1:
+		QuitToTitleTrigger=0
 		win.fill((0,0,0))
 		BlitSprite(Logo,(0,TitleHeight))
-		BlitSprite(Font.render(f"Press Space",0,(255,0,0)),(0,StartHeight))
+		BlitSprite(Font.render(f"Press V to Start",0,GameColors[3]),(0,StartHeight))
 		StartHeight*=0.95
-		StartHeight-=120*0.05
+		StartHeight-=64*0.05
 		TitleHeight*=0.95
-		WinScale()
-		ClockDelay(10)
-		HandleInputs()
-		if Button:
+		#WinScale()
+		ScaleWindow()
+		pygame.time.delay(10)
+		#ClockDelay(10)
+		#HandleInputs()
+		if JumpPress:
 			#Sounds["Confirm"].play()
 			MenuScreen()
 			StartHeight=0
 			TitleHeight=-128
 			Blink()
-			pygame.mixer.music.load("Music/Title.mp3")
-			pygame.mixer.music.play(-1)
+			#pygame.mixer.music.load("Music/Title.mp3")
+			#pygame.mixer.music.play(-1)
 
+GetColors(Image=pygame.image.load("Game Colors.png"),Index=random.randint(0,7))
 def MenuScreen():
 	#Blink()
 	Selected=0
@@ -552,16 +558,16 @@ def MenuScreen():
 	PosList=[
 	[i*1000,0] for i in range(len(TextList))]
 	TitleHeight=0
-	ControlY=0
 	while 1:
 		S=0.1
 		TitleHeight*=(1-S)
 		TitleHeight+=(PosList[0][1]+32)*S
 		LastCX=ControlY
-		#HandleInputs()
-		Events=pygame.event.get()
-		keys=pygame.key.get_pressed()
-		ControlY=keys[pygame.K_UP]-keys[pygame.K_DOWN]
+		win.fill((0,0,0))
+		BlitSprite(Logo,(0,TitleHeight))
+		for i,j in enumerate(TextList):
+			BlitSprite(Font.render(j,0,[GameColors[3],(255,255,255)][i==Selected]),PosList[i])
+		ScaleWindow()
 		DeltaCX=max(abs(ControlY)-abs(LastCX),0)*ControlY
 		Selected-=DeltaCX
 		#if DeltaCX:
@@ -570,27 +576,62 @@ def MenuScreen():
 			S=0.1#+i*0.03
 			PosList[i][0]=j[0]*(1-S)+((i==Selected)*64-32)*S
 			PosList[i][1]=j[1]*(1-S)-(i-Selected)*16*S
-		win.fill((0,0,0))
-		#BlitSprite(Logo,(0,TitleHeight))
-		for i,j in enumerate(TextList):
-			BlitSprite(Font.render(j,0,[(255,0,0),(255,255,255)][i==Selected]),PosList[i])
 		Selected%=len(TextList)
-		ScaleWindow()
 		#ClockDelay(10)
-		if keys[pygame.K_ESCAPE]:
+		if EscapePress:
 			return
-		if keys[pygame.K_v]:
+		if JumpPress:
 			#Sounds["Confirm"].play()
 			pygame.mixer.music.stop()
 			Blink()
-			[Main,BlankFunction,BlankFunction,QuitGame][Selected]()
+			[ClassicMode,BlankFunction,BlankFunction,QuitGame][Selected]()
+			return
+		if QuitToTitleTrigger:
 			return
 
-def Main():
+def ClassicMode():
+	Main("Classic")
+
+QuitToTitleTrigger=0
+def TriggerForceKill():
+	global QuitToTitleTrigger
+	QuitToTitleTrigger=1
+
+def PauseScreen():
+	Blink()
+	Selected=0
+	TextList=["Continue","Quit to Title","Close Game"]
+	PosList=[
+	[i*1000,0] for i in range(len(TextList))]
+	while 1:
+		LastCX=ControlY
+		win.fill((0,0,0))
+		BlitSprite(Font.render("Quick Menu",0,(255,255,255)),(0,120))
+		for i,j in enumerate(TextList):
+			BlitSprite(Font.render(j,0,[GameColors[3],(255,255,255)][i==Selected]),PosList[i])
+		Selected%=len(TextList)
+		ScaleWindow(Paused=1)
+		DeltaCX=max(abs(ControlY)-abs(LastCX),0)*ControlY
+		Selected-=DeltaCX
+		#if DeltaCX:
+		#	Sounds["Select"].play()
+		for i,j in enumerate(PosList):
+			PosList[i][0]=j[0]*0.9+((i==Selected)*64-32)*0.1
+			PosList[i][1]=j[1]*0.9-(i-Selected)*16*0.1
+		pygame.time.delay(10)
+		if JumpPress:
+			#Sounds["Confirm"].play()
+			#pygame.mixer.music.stop()
+			Blink()
+			[BlankFunction,TriggerForceKill,QuitGame][Selected]()
+			return
+
+def Main(Gamemode="Classic"):
 	global World,CurrentLevel,Level,Camera,Player,RT,OldLevelPos,RenderType,WallLocation,RenderText,HighScore
 	pygame.mixer.music.load(f"Music/OST.mp3")
 	#pygame.mixer.music.play(-1)
 	pygame.mixer.music.set_volume(1)
+	RenderText="Press V to jump and X to dash"
 	pygame.mixer.Sound("Death Voice Lines/Don't Touch the Purple (TTS) Export 1 Track 1 Render 1.wav").play()
 	RenderType="World Intro"
 	RenderDelay(2)
@@ -600,7 +641,7 @@ def Main():
 		WallLocation=0
 		OldLevelPos=[1000,1000]
 		RenderType="World Intro"
-		World=WorldClass()
+		World=WorldClass(Gamemode=Gamemode)
 		CurrentLevel=0
 		Level=World.Levels[CurrentLevel]
 		RenderDelay(1)
@@ -613,9 +654,10 @@ def Main():
 		if CurrentLevel+1>HighScore:
 			HighScore=CurrentLevel+1
 			open("High Score.txt","w").write(str(HighScore))
-		RenderText=GetDeathText()
+		if not QuitToTitleTrigger:
+			RenderText=GetDeathText()
 if __name__=="__main__":
 	#print(MenuClass(["One","Two","Three","Four","Five"])())
 	#Main()
-	MenuScreen()
+	TitleScreen()
 #v
