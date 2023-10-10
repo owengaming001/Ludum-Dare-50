@@ -6,7 +6,7 @@ Make more levels (easier ones)
 
 
 #SECTION 1: Defining variables
-import numpy,json,os,sys,time,threading,copy,random
+import numpy,json,os,sys,time,copy,random,webbrowser
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT']="hide"
 import pygame
 
@@ -137,7 +137,6 @@ class PlayerClass:
 		self.RenderPos=copy.deepcopy(self.Pos)
 	def __call__(self):
 		#Jumping
-		print("A")
 		if JumpPress and self.Grounded:
 			self.YV=-4
 			self.Grounded=0
@@ -554,7 +553,7 @@ GetColors(Image=pygame.image.load("Game Colors.png"),Index=random.randint(0,7))
 def MenuScreen():
 	#Blink()
 	Selected=0
-	TextList=["Start","Endless","Quit to Title","Close Game"]
+	TextList=["Classic Mode","Join Discord","Quit to Title","Close Game"]
 	PosList=[
 	[i*1000,0] for i in range(len(TextList))]
 	TitleHeight=0
@@ -584,10 +583,13 @@ def MenuScreen():
 			#Sounds["Confirm"].play()
 			pygame.mixer.music.stop()
 			Blink()
-			[ClassicMode,BlankFunction,BlankFunction,QuitGame][Selected]()
+			[ClassicMode,JoinDiscord,BlankFunction,QuitGame][Selected]()
 			return
 		if QuitToTitleTrigger:
 			return
+
+def JoinDiscord():
+	webbrowser.open("https://discord.gg/HqkwYqkHY4")  # Go to example.com
 
 def ClassicMode():
 	Main("Classic")
