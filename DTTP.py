@@ -335,6 +335,8 @@ class LevelClass:
 
 #SECTION 3: Defining gameplay functions
 
+GameFramerate=60
+
 def MainThread():
 	global Frames,StartTime
 	StartTime=time.time()
@@ -346,7 +348,7 @@ def MainThread():
 		if QuitToTitleTrigger:
 			return
 		Frames+=1
-		X=StartTime+Frames/60-time.time()
+		X=StartTime+Frames/GameFramerate-time.time()
 		if X>0:
 			RenderDelay(X)
 def Loop():
@@ -389,7 +391,7 @@ def Loop():
 		Player.RenderPos=Player.Pos
 		for i in range(30):
 			Frames+=1
-			X=StartTime+Frames/60-time.time()
+			X=StartTime+Frames/GameFramerate-time.time()
 			if X>0:
 				RenderDelay(X)
 			Camera.UpdatePosition(1.3)
@@ -400,8 +402,8 @@ def Loop():
 
 #SECTION 4: Defining render functions
 JumpPress,JumpHeld,DashPress,DashHeld,EscapePress=0,0,0,0,0
-JumpButton=pygame.K_v
-DashButton=pygame.K_x
+JumpButton=[pygame.K_v,pygame.K_SPACE]
+DashButton=[pygame.K_x,pygame.K_LSHIFT]
 def ScaleWindow(Paused=0):
 	global JumpPress,JumpHeld,DashPress,DashHeld,EscapePress,ControlX,ControlY
 	JumpPress=0
@@ -411,21 +413,26 @@ def ScaleWindow(Paused=0):
 	EscapePress=0
 	for Event in pygame.event.get():
 		if Event.type==pygame.KEYDOWN:
-			if Event.key==JumpButton:
+			if Event.key in JumpButton:
 				JumpPress=1
-			if Event.key==DashButton:
+			if Event.key in DashButton:
 				DashPress=1
 			if Event.key==pygame.K_ESCAPE:
 				EscapePress=1
 				if not Paused:
 					PauseScreen()
+		if Event.type==pygame.MOUSEBUTTONDOWN:
+			if Event.button==1:
+				JumpPress=1
+			if Event.button==3:
+				DashPress=1
 		if Event.type==pygame.QUIT:
 			sys.exit()
 	keys=pygame.key.get_pressed()
-	ControlX=keys[pygame.K_RIGHT]-keys[pygame.K_LEFT]
-	ControlY=keys[pygame.K_UP]-keys[pygame.K_DOWN]
-	JumpHeld=keys[JumpButton]
-	DashHeld=keys[DashPress]
+	ControlX=(keys[pygame.K_RIGHT] or keys[pygame.K_d])-(keys[pygame.K_LEFT] or keys[pygame.K_a])
+	ControlY=(keys[pygame.K_UP] or keys[pygame.K_w])-(keys[pygame.K_DOWN] or keys[pygame.K_s])
+	JumpHeld=any(keys[i] for i in JumpButton) or pygame.mouse.get_pressed()[0]
+	DashHeld=any(keys[i] for i in DashButton) or pygame.mouse.get_pressed()[1]
 	pygame.transform.scale(win,(TrueWin.get_width(),TrueWin.get_height()),TrueWin)
 	pygame.display.update()
 def ChromaticAberration(Pos):
@@ -631,7 +638,7 @@ def PauseScreen():
 def Main(Gamemode="Classic"):
 	global World,CurrentLevel,Level,Camera,Player,RT,OldLevelPos,RenderType,WallLocation,RenderText,HighScore
 	pygame.mixer.music.load(f"Music/OST.mp3")
-	#pygame.mixer.music.play(-1)
+	pygame.mixer.music.play(-1)
 	pygame.mixer.music.set_volume(1)
 	RenderText="Press V to jump and X to dash"
 	pygame.mixer.Sound("Death Voice Lines/Don't Touch the Purple (TTS) Export 1 Track 1 Render 1.wav").play()
