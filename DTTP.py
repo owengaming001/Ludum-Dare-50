@@ -28,6 +28,7 @@ RenderTextListIndexes=list(range(len(RenderTextList)))
 WallLocation=0
 HighScore=int(open("High Score.txt").read())
 TrueWin=pygame.display.set_mode((0,0),pygame.FULLSCREEN)
+#TrueWin=pygame.display.set_mode(win.get_size(),pygame.FULLSCREEN)
 Sounds={
 	"Death":pygame.mixer.Sound("Sounds/Death.mp3"),
 	"Dash":pygame.mixer.Sound("Sounds/Dash.mp3"),
@@ -58,29 +59,10 @@ TileProperties={
 }
 
 def GetColors(Color=None,Mode=None,UseOnlyGoodColors=False,Image=None,Index=0):
-	global GameColors#
-	if Image!=None:
-		GameColors=[Image.get_at((i,Index)) for i in range(4)]
-		return GameColors
-	if UseOnlyGoodColors:
-		ColorList=pygame.image.load("Colors.png")
-		R=random.randint(0,ColorList.get_height()-1)
-		GameColors=[ColorList.get_at((i,R)) for i in range(4)]
-		return GameColors
-	if Mode==None:
-		#Mode=random.choice(["monochrome","monochrome-dark","monochrome-light","analogic","complement","analogic-complement","triad","quad"])
-		#Mode=random.choice(["monochrome","monochrome-dark","monochrome-light"])
-		Mode="monochrome-light"
-	if Color==None:
-		Color="".join([random.choice(list("1234567890abcdef")) for i in range(6)])
-		#Color=random.choice([Color+"ff","ff"+Color])
-		#Color=random.choice([Color+"00","00"+Color])
-	print(f"Color: {Color}, Mode: {Mode}")
-	page=urllib.request.urlopen(f"https://www.thecolorapi.com/scheme?hex={Color}&mode={Mode}&count=4&format=json")
-	X=json.loads(page.read())
-	Y=[(X["colors"][i]["rgb"]["r"],X["colors"][i]["rgb"]["g"],X["colors"][i]["rgb"]["b"]) for i in range(4)]
-	GameColors=Y
-	return Y
+	global GameColors,CurrentColorName
+	GameColors=[Image.get_at((i,Index)) for i in range(4)]
+	CurrentColorName=ColorTitles[Index]
+	return GameColors
 def GetDeathText():
 	global RenderTextList,RenderTextListIndexes
 	Y=random.randint(0,len(RenderTextList)-1)
@@ -323,6 +305,8 @@ class LevelClass:
 		except:pass
 		try:image_pixel_array.replace((255,255,0),GameColors[3])
 		except:pass
+		try:image_pixel_array.replace((255,0,0),GameColors[4])
+		except:pass
 		"""ColorEffect=100
 		X=self.Image.copy()
 		X.fill((200-ColorEffect+hash(Name)%ColorEffect,200-ColorEffect+int(hash(Name)/ColorEffect)%ColorEffect,200-ColorEffect+int(hash(Name)/ColorEffect**2)%ColorEffect))
@@ -406,6 +390,8 @@ JumpButton=[pygame.K_v,pygame.K_SPACE]
 DashButton=[pygame.K_x,pygame.K_LSHIFT]
 def ScaleWindow(Paused=0):
 	global JumpPress,JumpHeld,DashPress,DashHeld,EscapePress,ControlX,ControlY
+	win.blit(pygame.transform.smoothscale(pygame.transform.smoothscale(win,(3,2)),win.get_size()),(0,0),special_flags=pygame.BLEND_ADD)
+	#win.blit(win,(0,0),special_flags=pygame.BLEND_MULT)
 	JumpPress=0
 	JumpHeld=0
 	DashPress=0
@@ -533,10 +519,11 @@ def TitleScreen():
 	TitleHeight=-64
 	#pygame.mixer.music.load("Music/Title.mp3")
 	#pygame.mixer.music.play(-1)
-	Logo=pygame.image.load("Logo.png")
+	#Logo=pygame.image.load("Logo.png")
 	while 1:
 		QuitToTitleTrigger=0
 		win.fill((0,0,0))
+		Logo=Font.render(f"{CurrentColorName}",0,(255,255,255))
 		BlitSprite(Logo,(0,TitleHeight))
 		BlitSprite(Font.render(f"Press V to Start",0,GameColors[3]),(0,StartHeight))
 		StartHeight*=0.95
@@ -553,11 +540,11 @@ def TitleScreen():
 			StartHeight=0
 			TitleHeight=-128
 			Blink()
-			GetColors(Image=pygame.image.load("Game Colors.png"),Index=0)
+			#GetColors(Image=pygame.image.load("Game Colors.png"),Index=0)
 			#pygame.mixer.music.load("Music/Title.mp3")
 			#pygame.mixer.music.play(-1)
 
-def TitleScreen():
+def UnlockScreen():
 	global Logo,UnlockedPalettes
 	StartHeight=0
 	TitleHeight=-64
@@ -588,12 +575,26 @@ def TitleScreen():
 			#pygame.mixer.music.load("Music/Title.mp3")
 			#pygame.mixer.music.play(-1)
 
+ColorNames=[
+"Violet",
+"Try Hard",
+"Classic",
+"Blue",
+"Orange"]
+
+ColorTitles=[
+"Don't Touch the Purple",
+"Don't Touch the Red",
+"Don't Touch the Purple",
+"Don't Touch the Blue",
+"Don't Touch the Orange"]
+
 #GetColors(Image=pygame.image.load("Game Colors.png"),Index=random.randint(0,7))
 GetColors(Image=pygame.image.load("Game Colors.png"),Index=0)
 def MenuScreen():
 	#Blink()
 	Selected=0
-	TextList=["Classic Mode","Join Discord","Quit to Title","Close Game"]
+	TextList=["Classic Mode","Join Discord","Select Colors","Quit to Title","Close Game"]
 	PosList=[
 	[i*1000,0] for i in range(len(TextList))]
 	TitleHeight=0
@@ -623,23 +624,16 @@ def MenuScreen():
 			#Sounds["Confirm"].play()
 			pygame.mixer.music.stop()
 			Blink()
-			[ClassicMode,JoinDiscord,BlankFunction,QuitGame][Selected]()
+			[ClassicMode,JoinDiscord,ColorSelectScreen,BlankFunction,QuitGame][Selected]()
 			return
 		if QuitToTitleTrigger:
 			return
 
-ColorNames=[
-"Purple",
-"Red",
-"Green",
-"Blue",
-"Cyan",
-"Magenta",
-"Yellow",
-"Orange"]
+
 
 try:
 	UnlockedPalettes=int(open("Unlocks.txt").read())
+	UnlockedPalettes=5
 except:
 	UnlockedPalettes=1
 	open("Unlocks.txt","w").write(str(UnlockedPalettes))
@@ -665,14 +659,14 @@ def ColorSelectScreen():
 		ScaleWindow()
 		DeltaCX=max(abs(ControlY)-abs(LastCX),0)*ControlY
 		Selected-=DeltaCX
-		if DeltaCX:
-			GetColors(Image=pygame.image.load("Game Colors.png"),Index=Selected)
 		#	Sounds["Select"].play()
 		for i,j in enumerate(PosList):
 			S=0.1#+i*0.03
 			PosList[i][0]=j[0]*(1-S)+((i==Selected)*64-32)*S
 			PosList[i][1]=j[1]*(1-S)-(i-Selected)*16*S
 		Selected%=len(TextList)
+		if DeltaCX:
+			GetColors(Image=pygame.image.load("Game Colors.png"),Index=Selected)
 		#ClockDelay(10)
 		if EscapePress:
 			return
@@ -729,7 +723,6 @@ def Main(Gamemode="Classic"):
 	pygame.mixer.music.load(f"Music/OST.mp3")
 	pygame.mixer.music.play(-1)
 	pygame.mixer.music.set_volume(1)
-	ColorSelectScreen()
 	RenderText="Press V to jump and X to dash"
 	pygame.mixer.Sound("Death Voice Lines/Don't Touch the Purple (TTS) Export 1 Track 1 Render 1.wav").play()
 	RenderType="World Intro"
@@ -746,6 +739,8 @@ def Main(Gamemode="Classic"):
 		RenderDelay(1)
 		Camera=CameraClass()
 		Player=PlayerClass()
+		if random.randint(1,10)==1 and UnlockedPalettes<len(ColorNames):
+			UnlockScreen()
 		RenderType="Level"
 		X=MainThread()
 		if X=="Complete":

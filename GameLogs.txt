@@ -1,0 +1,201 @@
+Levels/Classic\1 Way.png
+Levels/Classic\2 Way.png
+Levels/Classic\Celeste.png
+Levels/Classic\Comb.png
+Levels/Classic\Dash Jump.png
+Levels/Classic\Filler.png
+Levels/Classic\Island.png
+Levels/Classic\Keys.png
+Levels/Classic\L.png
+Levels/Classic\Long Hall.png
+Levels/Classic\New Beginning.png
+Levels/Classic\Slide.png
+Levels/Classic\Void.png
+Levels/Classic\Wall Jump.png
+Level 1: 2.434366226196289
+Level 2: 4.9348790645599365
+Level 3: 7.516766309738159
+Level 4: 9.85073208808899
+Level 5: 13.651450395584106
+Level 6: 16.484727144241333
+Level 7: 18.61753273010254
+Level 8: 20.68447756767273
+Level 9: 22.43449068069458
+Level 10: 24.284734964370728
+Levels/Classic\1 Way.png
+Levels/Classic\2 Way.png
+Levels/Classic\Celeste.png
+Levels/Classic\Comb.png
+Levels/Classic\Dash Jump.png
+Levels/Classic\Filler.png
+Levels/Classic\Island.png
+Levels/Classic\Keys.png
+Levels/Classic\L.png
+Levels/Classic\Long Hall.png
+Levels/Classic\New Beginning.png
+Levels/Classic\Slide.png
+Levels/Classic\Void.png
+Levels/Classic\Wall Jump.png
+Levels/Classic\1 Way.png
+Levels/Classic\2 Way.png
+Levels/Classic\Celeste.png
+Levels/Classic\Comb.png
+Levels/Classic\Dash Jump.png
+Levels/Classic\Filler.png
+Levels/Classic\Island.png
+Levels/Classic\Keys.png
+Levels/Classic\L.png
+Levels/Classic\Long Hall.png
+Levels/Classic\New Beginning.png
+Levels/Classic\Slide.png
+Levels/Classic\Void.png
+Levels/Classic\Wall Jump.png
+Levels/Classic\1 Way.png
+Levels/Classic\2 Way.png
+Levels/Classic\Celeste.png
+Levels/Classic\Comb.png
+Levels/Classic\Dash Jump.png
+Levels/Classic\Filler.png
+Levels/Classic\Island.png
+Levels/Classic\Keys.png
+Levels/Classic\L.png
+Levels/Classic\Long Hall.png
+Levels/Classic\New Beginning.png
+Levels/Classic\Slide.png
+Levels/Classic\Void.png
+Levels/Classic\Wall Jump.png
+Level 1: 2.3178679943084717
+Levels/Classic\1 Way.png
+Levels/Classic\2 Way.png
+Levels/Classic\Celeste.png
+Levels/Classic\Comb.png
+Levels/Classic\Dash Jump.png
+Levels/Classic\Filler.png
+Levels/Classic\Island.png
+Levels/Classic\Keys.png
+Levels/Classic\L.png
+Levels/Classic\Long Hall.png
+Levels/Classic\New Beginning.png
+Levels/Classic\Slide.png
+Levels/Classic\Void.png
+Levels/Classic\Wall Jump.png
+Level 1: 1.5173041820526123
+Level 2: 4.983519554138184
+Level 3: 6.68420672416687
+Level 4: 8.784734725952148
+Level 5: 11.118275165557861
+Level 6: 12.767361640930176
+Level 7: 16.33415198326111
+Levels/Classic\1 Way.png
+Levels/Classic\2 Way.png
+Levels/Classic\Celeste.png
+Levels/Classic\Comb.png
+Levels/Classic\Dash Jump.png
+Levels/Classic\Filler.png
+Levels/Classic\Island.png
+Levels/Classic\Keys.png
+Levels/Classic\L.png
+Levels/Classic\Long Hall.png
+Levels/Classic\New Beginning.png
+Levels/Classic\Slide.png
+Levels/Classic\Void.png
+Levels/Classic\Wall Jump.png
+Level 1: 1.5180027484893799
+Level 2: 3.6674797534942627
+Level 3: 5.319352865219116
+Level 4: 7.866849184036255
+Level 5: 9.652159452438354
+Level 6: 14.518117666244507
+Level 7: 17.335096836090088
+Level 8: 20.167755842208862
+Level 9: 23.550907850265503
+Level 10: 26.201965808868408
+Level 11: 28.167890787124634
+Level 12: 31.95100998878479
+Level 13: 33.7669677734375
+Levels/Classic\1 Way.png
+Levels/Classic\2 Way.png
+Levels/Classic\Celeste.png
+Levels/Classic\Comb.png
+Levels/Classic\Dash Jump.png
+Levels/Classic\Filler.png
+Levels/Classic\Island.png
+Levels/Classic\Keys.png
+Levels/Classic\L.png
+Levels/Classic\Long Hall.png
+Levels/Classic\New Beginning.png
+Levels/Classic\Slide.png
+Levels/Classic\Void.png
+Levels/Classic\Wall Jump.png
+Level 1: 1.4337353706359863
+Level 2: 3.3008437156677246
+Levels/Classic\1 Way.png
+Levels/Classic\2 Way.png
+Levels/Classic\Celeste.png
+Levels/Classic\Comb.png
+Levels/Classic\Dash Jump.png
+Levels/Classic\Filler.png
+Levels/Classic\Island.png
+Levels/Classic\Keys.png
+Levels/Classic\L.png
+Levels/Classic\Long Hall.png
+Levels/Classic\New Beginning.png
+Levels/Classic\Slide.png
+Levels/Classic\Void.png
+Levels/Classic\Wall Jump.png
+Level 1: 3.7507948875427246
+Level 2: 5.71776008605957
+Level 3: 7.417275667190552
+Level 4: 9.71768069267273
+Levels/Classic\1 Way.png
+Levels/Classic\2 Way.png
+Levels/Classic\Celeste.png
+Levels/Classic\Comb.png
+Levels/Classic\Dash Jump.png
+Levels/Classic\Filler.png
+Levels/Classic\Island.png
+Levels/Classic\Keys.png
+Levels/Classic\L.png
+Levels/Classic\Long Hall.png
+Levels/Classic\New Beginning.png
+Levels/Classic\Slide.png
+Levels/Classic\Void.png
+Levels/Classic\Wall Jump.png
+Levels/Classic\1 Way.png
+Levels/Classic\2 Way.png
+Levels/Classic\Celeste.png
+Levels/Classic\Comb.png
+Levels/Classic\Dash Jump.png
+Levels/Classic\Filler.png
+Levels/Classic\Island.png
+Levels/Classic\Keys.png
+Levels/Classic\L.png
+Levels/Classic\Long Hall.png
+Levels/Classic\New Beginning.png
+Levels/Classic\Slide.png
+Levels/Classic\Void.png
+Levels/Classic\Wall Jump.png
+Level 1: 3.8172857761383057
+Level 2: 5.968261241912842
+Level 3: 7.951280117034912
+Level 4: 9.617847919464111
+Level 5: 11.751287937164307
+Level 6: 14.581353425979614
+Level 7: 19.05129361152649
+Level 8: 21.23430562019348
+Level 9: 23.9014310836792
+Level 10: 26.751301288604736
+Levels/Classic\1 Way.png
+Levels/Classic\2 Way.png
+Levels/Classic\Celeste.png
+Levels/Classic\Comb.png
+Levels/Classic\Dash Jump.png
+Levels/Classic\Filler.png
+Levels/Classic\Island.png
+Levels/Classic\Keys.png
+Levels/Classic\L.png
+Levels/Classic\Long Hall.png
+Levels/Classic\New Beginning.png
+Levels/Classic\Slide.png
+Levels/Classic\Void.png
+Levels/Classic\Wall Jump.png
