@@ -1,1 +1,1 @@
-56
+{"Easy": 0, "Normal": 22, "Classic": 56}

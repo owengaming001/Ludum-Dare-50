@@ -26,7 +26,12 @@ RenderTextListIndexes=list(range(len(RenderTextList)))
 
 
 WallLocation=0
-HighScore=int(open("High Score.txt").read())
+HighScore={
+	"Easy":0,
+	"Normal":0,
+	"Classic":56,
+}
+HighScore.update(json.load(open("High Score.txt")))
 TrueWin=pygame.display.set_mode((0,0),pygame.FULLSCREEN)
 #TrueWin=pygame.display.set_mode(win.get_size(),pygame.FULLSCREEN)
 Sounds={
@@ -60,7 +65,7 @@ TileProperties={
 
 def GetColors(Color=None,Mode=None,UseOnlyGoodColors=False,Image=None,Index=0):
 	global GameColors,CurrentColorName
-	GameColors=[Image.get_at((i,Index)) for i in range(4)]
+	GameColors=[Image.get_at((i,Index)) for i in range(5)]
 	CurrentColorName=ColorTitles[Index]
 	return GameColors
 def GetDeathText():
@@ -251,7 +256,7 @@ class PlayerClass:
 		Level=World.Levels[CurrentLevel]
 
 class WorldClass:
-	def __init__(self,Gamemode="Classic"):
+	def __init__(self):
 		global LightColors,DarkColors
 		self.Levels=[]
 		L=[]
@@ -325,6 +330,12 @@ def MainThread():
 	global Frames,StartTime
 	StartTime=time.time()
 	Frames=0
+	for i in range(30):
+		Frames+=1
+		X=StartTime+Frames/GameFramerate-time.time()
+		if X>0:
+			RenderDelay(X)
+		Camera.UpdatePosition(1.3)
 	while 1:
 		G=Loop()
 		if G!=None:
@@ -371,6 +382,8 @@ def Loop():
 		Player.RespawnPoint=copy.deepcopy(Player.Pos)
 		Sounds["Level Complete"].play()
 		Player.DoubleJump=2
+		Player.XV=0
+		Player.YV=0
 		Camera.Pos=numpy.add(CPos,Player.Pos)
 		Player.RenderPos=Player.Pos
 		for i in range(30):
@@ -481,9 +494,9 @@ def RenderWorldIntro():
 	#TODO: Fix Color
 	T=Font.render(RenderText,0,(255,255,255))
 	try:
-		T2=Font.render(f"High Score: Level {HighScore}",0,GameColors[3])
+		T2=Font.render(f"High Score: Level {HighScore[Gamemode]}",0,GameColors[3])
 	except:
-		T2=Font.render(f"High Score: Level {HighScore}",0,(255,255,255))
+		T2=Font.render(f"High Score: Level {HighScore[Gamemode]}",0,(255,255,255))
 	win.blit(T,(win.get_width()/2-T.get_width()/2,win.get_height()/2-T.get_height()/2))
 	win.blit(T2,(win.get_width()/2-T2.get_width()/2,0))
 	ScaleWindow()
@@ -587,14 +600,14 @@ ColorTitles=[
 "Don't Touch the Red",
 "Don't Touch the Purple",
 "Don't Touch the Blue",
-"Don't Touch the Orange"]
+"Don't Touch the Orange Door"]
 
 #GetColors(Image=pygame.image.load("Game Colors.png"),Index=random.randint(0,7))
 GetColors(Image=pygame.image.load("Game Colors.png"),Index=0)
 def MenuScreen():
 	#Blink()
 	Selected=0
-	TextList=["Classic Mode","Join Discord","Select Colors","Quit to Title","Close Game"]
+	TextList=["Play","Join Discord","Select Colors","Quit to Title","Close Game"]
 	PosList=[
 	[i*1000,0] for i in range(len(TextList))]
 	TitleHeight=0
@@ -622,9 +635,47 @@ def MenuScreen():
 			return
 		if JumpPress:
 			#Sounds["Confirm"].play()
-			pygame.mixer.music.stop()
+			#pygame.mixer.music.stop()
 			Blink()
-			[ClassicMode,JoinDiscord,ColorSelectScreen,BlankFunction,QuitGame][Selected]()
+			[ModeSelect,JoinDiscord,ColorSelectScreen,BlankFunction,QuitGame][Selected]()
+			return
+		if QuitToTitleTrigger:
+			return
+
+def ModeSelect():
+	#Blink()
+	Selected=0
+	TextList=["Easy Mode","Normal Mode","Classic Mode"]
+	PosList=[
+	[i*1000,0] for i in range(len(TextList))]
+	TitleHeight=0
+	while 1:
+		S=0.1
+		TitleHeight*=(1-S)
+		TitleHeight+=(PosList[0][1]+32)*S
+		LastCX=ControlY
+		win.fill((0,0,0))
+		BlitSprite(Font.render("Select Difficulty",0,(255,255,255)),(0,TitleHeight))
+		for i,j in enumerate(TextList):
+			BlitSprite(Font.render(j,0,[GameColors[3],(255,255,255)][i==Selected]),PosList[i])
+		ScaleWindow()
+		DeltaCX=max(abs(ControlY)-abs(LastCX),0)*ControlY
+		Selected-=DeltaCX
+		#if DeltaCX:
+		#	Sounds["Select"].play()
+		for i,j in enumerate(PosList):
+			S=0.1#+i*0.03
+			PosList[i][0]=j[0]*(1-S)+((i==Selected)*64-32)*S
+			PosList[i][1]=j[1]*(1-S)-(i-Selected)*16*S
+		Selected%=len(TextList)
+		#ClockDelay(10)
+		if EscapePress:
+			return
+		if JumpPress:
+			#Sounds["Confirm"].play()
+			#pygame.mixer.music.stop()
+			Blink()
+			[EasyMode,NormalMode,ClassicMode][Selected]()
 			return
 		if QuitToTitleTrigger:
 			return
@@ -684,6 +735,12 @@ def JoinDiscord():
 def ClassicMode():
 	Main("Classic")
 
+def EasyMode():
+	Main("Easy")
+
+def NormalMode():
+	Main("Normal")
+
 QuitToTitleTrigger=0
 def TriggerForceKill():
 	global QuitToTitleTrigger
@@ -717,12 +774,13 @@ def PauseScreen():
 			Blink()
 			[BlankFunction,TriggerForceKill,QuitGame][Selected]()
 			return
-
-def Main(Gamemode="Classic"):
-	global World,CurrentLevel,Level,Camera,Player,RT,OldLevelPos,RenderType,WallLocation,RenderText,HighScore
-	pygame.mixer.music.load(f"Music/OST.mp3")
-	pygame.mixer.music.play(-1)
-	pygame.mixer.music.set_volume(1)
+Gamemode="Classic"
+pygame.mixer.music.load(f"Music/OST.mp3")
+pygame.mixer.music.play(-1)
+pygame.mixer.music.set_volume(1)
+def Main(GM="Classic"):
+	global World,CurrentLevel,Level,Camera,Player,RT,OldLevelPos,RenderType,WallLocation,RenderText,HighScore,Gamemode
+	Gamemode=GM
 	RenderText="Press V to jump and X to dash"
 	pygame.mixer.Sound("Death Voice Lines/Don't Touch the Purple (TTS) Export 1 Track 1 Render 1.wav").play()
 	RenderType="World Intro"
@@ -733,7 +791,7 @@ def Main(Gamemode="Classic"):
 		WallLocation=0
 		OldLevelPos=[1000,1000]
 		RenderType="World Intro"
-		World=WorldClass(Gamemode=Gamemode)
+		World=WorldClass()
 		CurrentLevel=0
 		Level=World.Levels[CurrentLevel]
 		RenderDelay(1)
@@ -745,9 +803,10 @@ def Main(Gamemode="Classic"):
 		X=MainThread()
 		if X=="Complete":
 			return
-		if CurrentLevel+1>HighScore:
-			HighScore=CurrentLevel+1
-			open("High Score.txt","w").write(str(HighScore))
+		if CurrentLevel+1>HighScore[Gamemode]:
+			HighScore[Gamemode]=CurrentLevel+1
+			#open("High Score.txt","w").write(str(HighScore))
+			json.dump(HighScore,open("High Score.txt","w"))
 		if not QuitToTitleTrigger:
 			RenderText=GetDeathText()
 if __name__=="__main__":
