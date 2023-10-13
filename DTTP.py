@@ -405,6 +405,10 @@ def ScaleWindow(Paused=0):
 	global JumpPress,JumpHeld,DashPress,DashHeld,EscapePress,ControlX,ControlY
 	win.blit(pygame.transform.smoothscale(pygame.transform.smoothscale(win,(3,2)),win.get_size()),(0,0),special_flags=pygame.BLEND_ADD)
 	#win.blit(win,(0,0),special_flags=pygame.BLEND_MULT)
+	if not pygame.mixer.music.get_busy():
+		pygame.mixer.music.load(f"Music/OST.mp3")
+		pygame.mixer.music.play(-1)
+		pygame.mixer.music.set_volume(1)
 	JumpPress=0
 	JumpHeld=0
 	DashPress=0
@@ -775,9 +779,6 @@ def PauseScreen():
 			[BlankFunction,TriggerForceKill,QuitGame][Selected]()
 			return
 Gamemode="Classic"
-pygame.mixer.music.load(f"Music/OST.mp3")
-pygame.mixer.music.play(-1)
-pygame.mixer.music.set_volume(1)
 def Main(GM="Classic"):
 	global World,CurrentLevel,Level,Camera,Player,RT,OldLevelPos,RenderType,WallLocation,RenderText,HighScore,Gamemode
 	Gamemode=GM
