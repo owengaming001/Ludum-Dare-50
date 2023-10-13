@@ -115,9 +115,9 @@ class PlayerClass:
 		self.Direction=1
 		self.DoubleJump=0
 		self.Pos=[16,0]
-		while self.Colliding():
+		while (self.Colliding() or self.CollidingWithHarm()):
 			self.Pos[1]+=8
-		while not self.Colliding():
+		while not (self.Colliding() or self.CollidingWithHarm()):
 			self.Pos[1]+=8
 		self.Pos[1]-=8
 		self.RespawnPoint=copy.deepcopy(self.Pos)
